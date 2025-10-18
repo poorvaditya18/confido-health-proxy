@@ -1,0 +1,10 @@
+src/.env
+src/__pycache__/
+src/configs/__pycache__/
+src/controllers/__pycache__/
+src/services/__pycache__/
+src/repository/__pycache__/
+src/schemas/__pycache__/
+src/models/__pycache__/
+src/scripts/__pycache__/
+venv/
