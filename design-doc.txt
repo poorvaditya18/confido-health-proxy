@@ -1,0 +1,68 @@
+Confido Health – EHR Integration Architecture
+
+Overview
+
+The Confido Health system currently consists of two core backend services designed to interact with multiple EHR (Electronic Health Record) systems such as Epic and Athena. These services are structured to provide modularity, scalability, and extensibility for future integrations.
+
+1. Services
+    a. confido-health-epic (aka confido-auth)
+
+    Responsibility: Handles token generation and authentication for external EHR data sources.
+
+    Design Pattern: Implements the Factory Pattern to dynamically support multiple authentication mechanisms (Epic, Athena, etc.) based on the data source type.
+
+    Caching: Uses Redis to store and reuse tokens temporarily, reducing redundant API calls.
+
+    b. confido-ehr-proxy
+
+    Responsibility: Fetches and normalizes healthcare data from different EHR systems through enabled connectors.
+
+    Current Implementation:
+
+    Supports FHIR R4-compliant data retrieval.
+
+    Uses pluggable connectors for each data source.
+
+    Retrieves and persists core entities — Patients, Appointments, Providers, and Locations.
+
+    Caching Layer: Frequently accessed resources and tokens are cached in Redis for optimized performance.
+
+2. Future Architecture
+
+To enhance scalability and maintain separation of concerns, the confido-ehr-proxy service can be further modularized into the following microservices:
+
+a. confido-connector
+
+Responsible for managing connectors per source system.
+
+Provides APIs to enable/disable connectors, and retrieve configuration details for each source.
+
+b. confido-proxy
+
+Responsible for data ingestion and aggregation from multiple EHR data sources.
+
+Orchestrates the data flow between connectors and internal data stores.
+
+c. Temporal Integration
+
+Temporal will act as the workflow orchestrator, ensuring reliability, fault tolerance, and durable execution for long-running data ingestion pipelines.
+
+Enables asynchronous, stateful, and retriable workflows — ideal for large-scale healthcare data pipelines.
+
+
+3. Challenges & Workarounds
+
+    - Epic FHIR APIs do not provide a “GET ALL Patients” endpoint.
+    - To fetch patient-level data, appointment-level data, each Patient ID must be explicitly provided.
+
+    - Bulk Data Kick-Off Attempt: 
+        Attempted to use the FHIR Bulk Data (Flat FHIR) Kick-Off API, but the sandbox credentials did not authorize access for the requested group resource.
+
+        The API responded with a 403 Forbidden error due to insufficient permissions.
+
+    - Implemented Workaround:
+        As a temporary solution, the patient ID list provided in the Epic sandbox documentation has been hardcoded.
+
+        When the /ingest API is triggered:
+        The system ingests Patients, Appointments, Providers, and Locations corresponding to those patient IDs.
+        This ensures complete data flow demonstration despite the sandbox limitation.

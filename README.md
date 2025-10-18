@@ -2,6 +2,8 @@
 
 description: responsible to connect with various data source with plug-in/plug-out pattern (currently supports: EPIC)
 
+NOTE: please refer `design-doc.txt`
+
 # Setup ENVs:
 
 EPIC_BASE_URL=
