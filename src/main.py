@@ -3,8 +3,7 @@ import logging
 from fastapi import FastAPI
 from contextlib import asynccontextmanager
 from services.redis_service import RedisService
-from configs.db_config import Database
-from configs.config import Config
+from configs.db_config import Base
 from controllers import routes
 from configs.db_singleton import init_db
 
@@ -18,7 +17,8 @@ logger = logging.getLogger("confido-ehr-proxy")
 async def lifespan(app: FastAPI):
     try:
         RedisService()
-        init_db() 
+        db = init_db() 
+        Base.metadata.create_all(bind=db._engine)
         logger.info("database connected")
     except Exception as e:
         logger.error("Failed to initialize server. err: %s", e)
